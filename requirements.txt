@@ -1,0 +1,5 @@
+aiogram
+requests
+loguru
+colorama
+python-dotenv
