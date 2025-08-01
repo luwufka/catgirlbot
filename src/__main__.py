@@ -20,7 +20,7 @@ queue = []
 @dp.startup()
 async def on_startup():
     me = await bot.get_me()
-    logger.info(f"Bot started {me.username} :3")
+    logger.info(f"Bot started as {Fore.BLUE}@{me.username} {Fore.LIGHTMAGENTA_EX}:3")
 
 @dp.message(filters.CommandStart())
 async def start(message: types.Message):
