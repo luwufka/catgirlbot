@@ -24,22 +24,31 @@ async def on_startup():
 
 @dp.message(filters.CommandStart())
 async def start(message: types.Message):
-    await message.reply(phrases.WELCOME, parse_mode=ParseMode.HTML)
+    try:
+        await message.reply(phrases.WELCOME, parse_mode=ParseMode.HTML)
+    except Exception as e:
+        logger.error(e)
 
 @dp.message(filters.Command(commands=["meow", "nsfw"]))
 async def meow(message: types.Message):
-    user_id  = message.from_user.id
-    if user_id in queue:
-        await message.reply(phrases.QUEUE_DENY, parse_mode=ParseMode.HTML)
-        return
-    queue.append(user_id)
-    is_nsfw= True if "nsfw" in message.text else False
-    caption = phrases.NSFW_CAPTION if "nsfw" in message.text else phrases.SFW_CAPTION
-    url = ct.get_neko(nsfw=is_nsfw)
-    if url:
-        logger.debug(f"Image URL: {Fore.WHITE}{url} ({caption})")
-        await message.reply_photo(url, caption=caption, has_spoiler=is_nsfw, parse_mode=ParseMode.HTML)
-        queue.remove(user_id)
+    try:
+        user_id  = message.from_user.id
+        if user_id in queue:
+            await message.reply(phrases.QUEUE_DENY, parse_mode=ParseMode.HTML)
+            return
+        is_nsfw= True if "nsfw" in message.text else False
+        caption = phrases.NSFW_CAPTION if "nsfw" in message.text else phrases.SFW_CAPTION
+        queue.append(user_id)
+        url = ct.get_neko(nsfw=is_nsfw)
+        if url:
+            logger.debug(f"Image URL: {Fore.WHITE}{url} ({caption})")
+            await message.reply_photo(url, caption=caption, has_spoiler=is_nsfw, parse_mode=ParseMode.HTML)
+            queue.remove(user_id)
+    except Exception as e:
+        if user_id in queue:
+            queue.remove(user_id) # remove from queue if error
+        logger.error(e)
+        await message.reply(phrases.ERROR_MESSAGE, parse_mode=ParseMode.HTML)
 
 async def main():
     # middlewares:
